@@ -100,8 +100,8 @@ function StockPage() {
   const addEntry = useMutation({
     mutationFn: async () => {
       if (!modelId) throw new Error("Selecione o modelo da plaquinha.");
-      if (!Number.isSafeInteger(qty) || qty < 1 || qty > 10000)
-        throw new Error("Informe uma quantidade inteira entre 1 e 10.000.");
+      if (!Number.isSafeInteger(qty) || qty < 1 || qty > 5000)
+        throw new Error("Informe uma quantidade inteira entre 1 e 5.000. (Limite atual do banco de dados).");
       const cost = unitCost.trim() === "" ? 0 : Number(unitCost.replace(",", "."));
       if (!Number.isFinite(cost) || cost < 0) throw new Error("Informe um custo unitário válido.");
       const { data, error } = await supabase.rpc("create_stock_entry", {
@@ -238,7 +238,7 @@ function StockPage() {
                     className={fieldClass}
                     type="number"
                     min="1"
-                    max="10000"
+                    max="5000"
                     step="1"
                     value={quantity}
                     onChange={(event) => setQuantity(event.target.value)}
