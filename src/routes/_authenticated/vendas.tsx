@@ -42,7 +42,7 @@ function SalesPage() {
   const dataQuery = useQuery({
     queryKey: ["sales-page-data"],
     queryFn: async () => {
-      const [customersRes, platesRes, salesRes] = await Promise.all([
+      const [platesRes, salesRes] = await Promise.all([
         supabase
           .from("plates")
           .select("id,code,status,model_id,plate_models(name,default_price)")
