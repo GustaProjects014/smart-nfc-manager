@@ -139,8 +139,21 @@ function StockPage() {
       setNotes("");
       await queryClient.invalidateQueries();
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível registrar a entrada."),
+    onError: (error: unknown) => {
+      const details =
+        error && typeof error === "object"
+          ? (error as { message?: string; details?: string; hint?: string; code?: string })
+          : null;
+      const message =
+        error instanceof Error
+          ? error.message
+          : details?.message || "Não foi possível registrar a entrada.";
+      const extra = [details?.details, details?.hint, details?.code ? `Código: ${details.code}` : null]
+        .filter(Boolean)
+        .join(" · ");
+      toast.error(extra ? `${message} — ${extra}` : message, { duration: 10000 });
+      console.error("Falha ao registrar entrada de estoque:", error);
+    },
   });
 
   const data = stock.data;
