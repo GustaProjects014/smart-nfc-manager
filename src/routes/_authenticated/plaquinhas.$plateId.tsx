@@ -71,7 +71,7 @@ function PlateDetailPage() {
   const plate = plateQuery.data;
   useEffect(() => {
     if (plate) setDestination(plate.destination_url ?? "");
-  }, [plate?.id, plate?.destination_url]);
+  }, [plate]);
   const baseUrl = useMemo(() => {
     const configured = settingsQuery.data?.public_base_url?.trim().replace(/\/+$/, "");
     return configured || (typeof window !== "undefined" ? window.location.origin : "");
