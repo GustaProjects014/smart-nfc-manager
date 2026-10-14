@@ -198,7 +198,10 @@ function SalesPage() {
           role="alert"
           className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
         >
-          Não foi possível carregar estoque e vendas: {dataQuery.error instanceof Error ? dataQuery.error.message : "verifique a conexão com o banco."}
+          Não foi possível carregar estoque e vendas:{" "}
+          {dataQuery.error instanceof Error
+            ? dataQuery.error.message
+            : "verifique a conexão com o banco."}
         </div>
       )}
       <section className="grid gap-3 grid-cols-2 xl:grid-cols-4">
