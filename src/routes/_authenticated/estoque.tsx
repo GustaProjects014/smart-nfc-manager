@@ -74,6 +74,7 @@ function StockPage() {
         _unit_cost: cost,
       });
       if (error) throw error;
+      if (!data) throw new Error("O banco não retornou os dados da entrada registrada.");
       const entry = data as { id: string; first_seq: number; last_seq: number; quantity: number };
       const { count, error: platesError } = await supabase.from("plates").select("id", { count: "exact", head: true }).eq("entry_id", entry.id);
       if (platesError) throw platesError;
