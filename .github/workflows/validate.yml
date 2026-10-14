@@ -39,21 +39,8 @@ jobs:
             'src/routes/_authenticated/revendedores.tsx' \
             'src/routes/_authenticated/relatorios.tsx' \
             'src/styles.css'
-      - name: Lint changed NFC Control screens
-        run: |
-          bunx eslint \
-            'src/routes/_authenticated/painel.tsx' \
-            'src/routes/_authenticated/estoque.tsx' \
-            'src/routes/_authenticated/plaquinhas.tsx' \
-            'src/routes/_authenticated/plaquinhas.$plateId.tsx' \
-            'src/routes/_authenticated/qrcodes.tsx' \
-            'src/routes/r.$slug.tsx' \
-            'src/routes/_authenticated/clientes.tsx' \
-            'src/routes/_authenticated/vendas.tsx' \
-            'src/routes/_authenticated/financeiro.tsx' \
-            'src/routes/_authenticated/configuracoes.tsx' \
-            'src/routes/_authenticated/revendedores.tsx' \
-            'src/routes/_authenticated/relatorios.tsx'
+      - name: Check whitespace
+        run: git diff --check
       - name: Commit formatting changes
         if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
