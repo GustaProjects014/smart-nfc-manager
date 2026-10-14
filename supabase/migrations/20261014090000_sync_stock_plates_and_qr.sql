@@ -33,7 +33,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO public.code_counter (id, last_seq)
 SELECT 1, COALESCE(MAX(seq), 0) FROM public.plates
 ON CONFLICT (id) DO UPDATE
-SET last_seq = GREATEST(public.code_counter.last_seq, EXCLUDED.last_seq);
+SET last_seq = GREATEST(code_counter.last_seq, EXCLUDED.last_seq);
 
 CREATE OR REPLACE FUNCTION public.create_stock_entry(
   _model_id uuid,
