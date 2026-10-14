@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ExternalLink, QrCode, Search, Tags } from "lucide-react";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/plaquinhas")({
 });
 
 function PlatesPage() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("todos");
   const platesQuery = useQuery({
@@ -54,6 +55,12 @@ function PlatesPage() {
     [plates, search, status],
   );
   const count = (s: string) => plates.filter((p) => p.status === s).length;
+
+  // Esta rota também é o layout pai de /plaquinhas/$plateId. Sem Outlet,
+  // o TanStack Router reconhece a URL, mas não renderiza a tela de configuração.
+  if (pathname !== "/plaquinhas" && pathname.startsWith("/plaquinhas/")) {
+    return <Outlet />;
+  }
 
   return (
     <div className="space-y-6">
