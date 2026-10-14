@@ -58,9 +58,13 @@ function PlateDetailPage() {
   const resellersQuery = useQuery({
     queryKey: ["reseller-options"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("user_roles").select("user_id,profiles(full_name,email)").eq("role", "revendedor");
-      if (error) throw error;
-      return data ?? [];
+      const { data: roles, error: roleError } = await supabase.from("user_roles").select("user_id").eq("role", "revendedor");
+      if (roleError) throw roleError;
+      const ids = (roles ?? []).map((item) => item.user_id);
+      if (!ids.length) return [];
+      const { data: profiles, error: profileError } = await supabase.from("profiles").select("id,full_name,email").in("id", ids);
+      if (profileError) throw profileError;
+      return (profiles ?? []).map((profile) => ({ user_id: profile.id, profiles: profile }));
     },
     enabled: action === "atribuir",
   });
