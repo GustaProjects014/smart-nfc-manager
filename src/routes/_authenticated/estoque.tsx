@@ -27,23 +27,25 @@ function StockPage() {
   const stock = useQuery({
     queryKey: ["stock-page"],
     queryFn: async () => {
-      const [platesRes, entriesRes, modelsRes] = await Promise.all([
-        supabase.from("plates").select("id,seq,status"),
+      const [totalRes, availableRes, reservedRes, soldRes, lastPlateRes, entriesRes, modelsRes] = await Promise.all([
+        supabase.from("plates").select("id", { count: "exact", head: true }),
+        supabase.from("plates").select("id", { count: "exact", head: true }).eq("status", "disponivel"),
+        supabase.from("plates").select("id", { count: "exact", head: true }).eq("status", "reservada"),
+        supabase.from("plates").select("id", { count: "exact", head: true }).eq("status", "vendida"),
+        supabase.from("plates").select("seq").order("seq", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("stock_entries").select("id,entry_number,quantity,first_seq,last_seq,received_date,supplier,unit_cost,total_cost,stock_before,stock_after,created_at,notes,plate_models(name)").order("entry_number", { ascending: false }).limit(100),
         supabase.from("plate_models").select("id,name,active,default_cost").eq("active", true).order("name"),
       ]);
-      const error = platesRes.error || entriesRes.error || modelsRes.error;
+      const error = totalRes.error || availableRes.error || reservedRes.error || soldRes.error || lastPlateRes.error || entriesRes.error || modelsRes.error;
       if (error) throw error;
-      const plates = platesRes.data ?? [];
       return {
-        plates,
         entries: entriesRes.data ?? [],
         models: modelsRes.data ?? [],
-        total: plates.length,
-        available: plates.filter((p) => p.status === "disponivel").length,
-        reserved: plates.filter((p) => p.status === "reservada").length,
-        sold: plates.filter((p) => p.status === "vendida").length,
-        lastSeq: plates.reduce((max, p) => Math.max(max, p.seq), 0),
+        total: totalRes.count ?? 0,
+        available: availableRes.count ?? 0,
+        reserved: reservedRes.count ?? 0,
+        sold: soldRes.count ?? 0,
+        lastSeq: lastPlateRes.data?.seq ?? 0,
       };
     },
     staleTime: 15_000,
