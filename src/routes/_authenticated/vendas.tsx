@@ -74,7 +74,7 @@ function SalesPage() {
         _customer_id: customerId,
         _discount: disc,
         _notes: notes.trim(),
-        _payment_method: paid > 0 ? method : "",
+        _payment_method: method,
         _plate_ids: plateIds,
         _reseller_id: null as unknown as string,
         _sale_date: saleDate,
