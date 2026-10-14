@@ -50,11 +50,11 @@ SET last_seq = GREATEST(code_counter.last_seq, EXCLUDED.last_seq);
 
 CREATE OR REPLACE FUNCTION public.create_stock_entry(
   _model_id uuid,
-  _notes text,
   _quantity integer,
   _received_date date,
   _supplier text,
-  _unit_cost numeric
+  _unit_cost numeric,
+  _notes text
 )
 RETURNS public.stock_entries
 LANGUAGE plpgsql
@@ -161,7 +161,7 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.create_stock_entry(uuid, text, integer, date, text, numeric) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.create_stock_entry(uuid, integer, date, text, numeric, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_stock_entry(uuid, text, integer, date, text, numeric) TO authenticated;
 
 -- Anonymous visitors must be able to resolve public QR links; the function returns only the destination/status for a slug.
