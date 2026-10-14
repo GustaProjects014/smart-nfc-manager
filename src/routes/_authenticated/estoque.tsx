@@ -74,10 +74,17 @@ function StockPage() {
         _unit_cost: cost,
       });
       if (error) throw error;
-      return data;
+      const entry = data as { id: string; first_seq: number; last_seq: number; quantity: number };
+      const { count, error: platesError } = await supabase.from("plates").select("id", { count: "exact", head: true }).eq("entry_id", entry.id);
+      if (platesError) throw platesError;
+      return { entry, unitsCreated: count ?? 0 };
     },
-    onSuccess: async (entry) => {
-      toast.success(`Entrada registrada: ${formatNfcCode(entry.first_seq)} até ${formatNfcCode(entry.last_seq)}.`);
+    onSuccess: async ({ entry, unitsCreated }) => {
+      if (unitsCreated !== entry.quantity) {
+        toast.error(`A entrada foi salva, mas o banco criou ${unitsCreated} de ${entry.quantity} plaquinhas. Aplique a migração de sincronização do estoque para gerar as unidades e seus QR Codes.`);
+      } else {
+        toast.success(`Entrada registrada: ${formatNfcCode(entry.first_seq)} até ${formatNfcCode(entry.last_seq)}. Plaquinhas e QR Codes criados.`);
+      }
       setSupplier("");
       setUnitCost("");
       setNotes("");
