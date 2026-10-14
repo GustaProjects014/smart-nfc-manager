@@ -2,7 +2,7 @@ import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-route
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  LayoutDashboard, Boxes, Tags, QrCode, ShoppingBag, Users, Wallet, Handshake, FileBarChart, Settings, LogOut, Menu, X,
+  LayoutDashboard, Boxes, Tags, QrCode, ShoppingBag, Wallet, Handshake, FileBarChart, Settings, LogOut, Menu, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe } from "@/lib/session";
@@ -14,7 +14,6 @@ const NAV = [
   { to: "/plaquinhas", label: "Plaquinhas", icon: Tags },
   { to: "/qrcodes", label: "QR Codes", icon: QrCode },
   { to: "/vendas", label: "Vendas", icon: ShoppingBag },
-  { to: "/clientes", label: "Clientes", icon: Users },
   { to: "/financeiro", label: "Financeiro", icon: Wallet, admin: true },
   { to: "/revendedores", label: "Revendedores", icon: Handshake, admin: true },
   { to: "/relatorios", label: "Relatórios", icon: FileBarChart, admin: true },
