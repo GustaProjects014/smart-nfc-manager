@@ -148,7 +148,11 @@ function StockPage() {
         error instanceof Error
           ? error.message
           : details?.message || "Não foi possível registrar a entrada.";
-      const extra = [details?.details, details?.hint, details?.code ? `Código: ${details.code}` : null]
+      const extra = [
+        details?.details,
+        details?.hint,
+        details?.code ? `Código: ${details.code}` : null,
+      ]
         .filter(Boolean)
         .join(" · ");
       toast.error(extra ? `${message} — ${extra}` : message, { duration: 10000 });
