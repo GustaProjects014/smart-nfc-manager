@@ -29,7 +29,7 @@ function PlatesPage() {
     },
     staleTime: 15_000,
   });
-  const plates = platesQuery.data ?? [];
+  const plates = useMemo(() => platesQuery.data ?? [], [platesQuery.data]);
   const filtered = useMemo(() => plates.filter((plate) => {
     const model = plate.plate_models as unknown as { name?: string } | null;
     const customer = plate.customers as unknown as { name?: string } | null;
