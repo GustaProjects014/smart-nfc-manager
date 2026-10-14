@@ -31,6 +31,23 @@ export const Route = createFileRoute("/_authenticated/plaquinhas/$plateId")({
     ],
   }),
   component: PlateDetailPage,
+  errorComponent: ({ error, reset }) => (
+    <div className="mx-auto max-w-2xl space-y-4 py-12">
+      <Panel title="Não foi possível abrir a configuração do QR Code">
+        <p className="text-sm text-muted-foreground">
+          A tela encontrou um erro ao carregar esta plaquinha. Tente novamente; se continuar,
+          confira sua sessão e a conexão com o banco de dados.
+        </p>
+        <p className="mt-3 break-words rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+          {error instanceof Error ? error.message : "Erro inesperado ao carregar a rota."}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" onClick={reset} className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">Tentar novamente</button>
+          <a href="/qrcodes" className="inline-flex h-10 items-center rounded-lg border px-4 text-sm font-medium">Voltar aos QR Codes</a>
+        </div>
+      </Panel>
+    </div>
+  ),
 });
 
 function PlateDetailPage() {
@@ -38,6 +55,7 @@ function PlateDetailPage() {
   const queryClient = useQueryClient();
   const [destination, setDestination] = useState("");
   const [qrImage, setQrImage] = useState("");
+  const [qrImageError, setQrImageError] = useState(false);
   const [action, setAction] = useState("reservar");
   const [reason, setReason] = useState("");
   const [resellerId, setResellerId] = useState("");
@@ -120,6 +138,7 @@ function PlateDetailPage() {
   const permanentUrl = plate && baseUrl ? baseUrl + "/r/" + plate.slug : "";
   useEffect(() => {
     let cancelled = false;
+    setQrImageError(false);
     if (!permanentUrl) {
       setQrImage("");
       return;
@@ -134,7 +153,10 @@ function PlateDetailPage() {
         if (!cancelled) setQrImage(url);
       })
       .catch(() => {
-        if (!cancelled) setQrImage("");
+        if (!cancelled) {
+          setQrImage("");
+          setQrImageError(true);
+        }
       });
     return () => {
       cancelled = true;
@@ -494,8 +516,10 @@ function PlateDetailPage() {
                   className="h-auto w-full max-w-[280px]"
                 />
               ) : (
-                <div className="grid aspect-square w-full max-w-[280px] place-items-center text-sm text-muted-foreground">
-                  Gerando QR Code…
+                <div className="grid aspect-square w-full max-w-[280px] place-items-center p-6 text-sm text-muted-foreground">
+                  {qrImageError
+                    ? "Não foi possível gerar a imagem do QR Code. Atualize a página e tente novamente."
+                    : "Gerando QR Code permanente…"}
                 </div>
               )}
               <p className="mt-2 text-sm font-semibold text-neutral-900">{plate.code}</p>
