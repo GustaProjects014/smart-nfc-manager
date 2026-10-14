@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-import { ArrowLeft, Check, Copy, Download, ExternalLink, History, Link2, QrCode, RefreshCw, Save, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Copy, Download, ExternalLink, History, Link2, QrCode, RefreshCw, Save, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, Panel, StatusBadge } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
