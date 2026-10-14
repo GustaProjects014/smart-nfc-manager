@@ -64,6 +64,23 @@ function FinancePage() {
   const revenue = activeSales.reduce((sum, s) => sum + Number(s.total || 0), 0);
   const pending = Math.max(0, revenue - received);
   const expensesTotal = (data?.expenses ?? []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const monthlySales = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
+      const key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+      const label = date.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+      const monthSales = activeSales.filter((sale) => String(sale.sale_date).slice(0, 7) === key);
+      return {
+        key,
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        sales: monthSales.reduce((sum, sale) => sum + Number(sale.total || 0), 0),
+        received: monthSales.reduce((sum, sale) => sum + Number(sale.amount_paid || 0), 0),
+        count: monthSales.length,
+      };
+    });
+  }, [data]);
+  const chartMax = Math.max(1, ...monthlySales.map((month) => Math.max(month.sales, month.received)));
   const entries = useMemo(
     () =>
       [
@@ -146,9 +163,33 @@ function FinancePage() {
           role="alert"
           className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
         >
-          Não foi possível carregar os dados financeiros.
+          Não foi possível carregar os dados financeiros: {query.error instanceof Error ? query.error.message : "verifique as permissões e a conexão com o banco de dados."}
         </div>
       )}
+      {query.isLoading && <Panel title="Carregando financeiro"><p className="text-sm text-muted-foreground">Buscando vendas, recebimentos e despesas…</p></Panel>}
+      <Panel title="Vendas e recebimentos por mês">
+        <div className="mb-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-2"><span className="size-2.5 rounded-sm bg-primary" /> Faturamento</span>
+          <span className="inline-flex items-center gap-2"><span className="size-2.5 rounded-sm bg-amber-500" /> Recebido</span>
+        </div>
+        {monthlySales.every((month) => month.sales === 0 && month.received === 0) ? (
+          <Empty>{query.isLoading ? "Carregando dados para o gráfico…" : "Ainda não há vendas nesses seis meses. Assim que registrar vendas, o gráfico será preenchido automaticamente."}</Empty>
+        ) : (
+          <div className="grid grid-cols-6 items-end gap-3 pt-2">
+            {monthlySales.map((month) => (
+              <div key={month.key} className="min-w-0 text-center">
+                <div className="flex h-36 items-end justify-center gap-1 border-b pb-1">
+                  <div title={"Faturamento: " + brl(month.sales)} className="w-3/12 min-w-2 rounded-t bg-primary" style={{ height: Math.max(month.sales ? 5 : 0, month.sales / chartMax * 100) + "%" }} />
+                  <div title={"Recebido: " + brl(month.received)} className="w-3/12 min-w-2 rounded-t bg-amber-500" style={{ height: Math.max(month.received ? 5 : 0, month.received / chartMax * 100) + "%" }} />
+                </div>
+                <p className="mt-2 truncate text-xs font-medium">{month.label}</p>
+                <p className="mt-1 text-[10px] text-muted-foreground">{month.count} venda(s)</p>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="mt-4 text-xs text-muted-foreground">Valores de vendas não canceladas. O faturamento representa o total vendido; recebido representa o valor registrado como pago.</p>
+      </Panel>
       <section className="grid gap-3 grid-cols-2 xl:grid-cols-4">
         <Stat label="Faturamento ativo" value={brl(revenue)} hint="Vendas não canceladas" />
         <Stat label="Recebido" value={brl(received)} hint="Valores confirmados" tone="gold" />
