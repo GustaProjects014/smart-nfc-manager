@@ -143,7 +143,15 @@ function PlatesPage() {
               const entry = plate.stock_entries as unknown as { received_date?: string } | null;
               return (
                 <tr key={plate.id}>
-                  <td className="whitespace-nowrap font-semibold">{plate.code}</td>
+                  <td className="whitespace-nowrap font-semibold">
+                    <a
+                      href={"/plaquinhas/" + plate.id}
+                      className="underline-offset-4 hover:underline"
+                      aria-label={"Abrir configuração de " + plate.code}
+                    >
+                      {plate.code}
+                    </a>
+                  </td>
                   <td>{model?.name ?? "—"}</td>
                   <td>
                     <StatusBadge value={plate.status} />
