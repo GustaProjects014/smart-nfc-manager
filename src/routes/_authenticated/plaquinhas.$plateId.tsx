@@ -42,8 +42,19 @@ export const Route = createFileRoute("/_authenticated/plaquinhas/$plateId")({
           {error instanceof Error ? error.message : "Erro inesperado ao carregar a rota."}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={reset} className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground">Tentar novamente</button>
-          <a href="/qrcodes" className="inline-flex h-10 items-center rounded-lg border px-4 text-sm font-medium">Voltar aos QR Codes</a>
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex h-10 items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground"
+          >
+            Tentar novamente
+          </button>
+          <a
+            href="/qrcodes"
+            className="inline-flex h-10 items-center rounded-lg border px-4 text-sm font-medium"
+          >
+            Voltar aos QR Codes
+          </a>
         </div>
       </Panel>
     </div>
