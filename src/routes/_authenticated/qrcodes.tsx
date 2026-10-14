@@ -31,7 +31,7 @@ function QrCodesPage() {
     staleTime: 15_000,
   });
   const baseUrl = query.data?.base.trim().replace(/\/+$/, "") || (typeof window !== "undefined" ? window.location.origin : "");
-  const plates = query.data?.plates ?? [];
+  const plates = useMemo(() => query.data?.plates ?? [], [query.data?.plates]);
   const filtered = useMemo(() => plates.filter((p) => {
     const model = p.plate_models as unknown as { name?: string } | null;
     const q = search.trim().toLocaleLowerCase("pt-BR");
