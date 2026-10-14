@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { brl, downloadCsv, fmtDate, fmtDateTime } from "@/lib/format";
 
 const fieldCls = "h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20";
-const today = () => new Date().toISOString().slice(0, 10);
 
 export const Route = createFileRoute("/_authenticated/financeiro")({
   head: () => ({ meta: [{ title: "Financeiro — NFC Control" }, { name: "description", content: "Acompanhe recebimentos, pendências e despesas." }] }),
