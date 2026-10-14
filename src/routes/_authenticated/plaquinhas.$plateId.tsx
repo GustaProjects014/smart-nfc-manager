@@ -544,12 +544,14 @@ function PlateDetailPage() {
                 onClick={async () => {
                   if (!permanentUrl) return;
                   try {
-                    const image = qrImage || await QRCode.toDataURL(permanentUrl, {
-                      width: 1000,
-                      margin: 3,
-                      errorCorrectionLevel: "H",
-                      color: { dark: "#171717", light: "#FFFFFF" },
-                    });
+                    const image =
+                      qrImage ||
+                      (await QRCode.toDataURL(permanentUrl, {
+                        width: 1000,
+                        margin: 3,
+                        errorCorrectionLevel: "H",
+                        color: { dark: "#171717", light: "#FFFFFF" },
+                      }));
                     const a = document.createElement("a");
                     a.href = image;
                     a.download = plate.code.toLowerCase().replace(/\s+/g, "-") + "-qr.png";
