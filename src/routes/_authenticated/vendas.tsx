@@ -49,7 +49,7 @@ function SalesPage() {
   });
   const data = dataQuery.data;
   const available = data?.plates ?? [];
-  const sales = data?.sales ?? [];
+  const sales = useMemo(() => data?.sales ?? [], [data?.sales]);
   const selectedPlates = available.filter((p) => plateIds.includes(p.id));
   const subtotal = selectedPlates.length * Math.max(0, Number(unitPrice) || 0);
   const total = Math.max(0, subtotal - Math.max(0, Number(discount) || 0));
