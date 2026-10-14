@@ -5,7 +5,7 @@ import { CircleDollarSign, CreditCard, Plus, Search, ShoppingBag, X } from "luci
 import { toast } from "sonner";
 import { PageHeader, Panel, DataTable, Empty, StatusBadge, Stat } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
-import { brl, fmtDate, fmtDateTime } from "@/lib/format";
+import { brl, fmtDate } from "@/lib/format";
 
 const fieldCls = "h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20";
 const today = () => new Date().toISOString().slice(0, 10);
