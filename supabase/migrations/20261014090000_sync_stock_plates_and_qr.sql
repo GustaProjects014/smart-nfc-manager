@@ -30,6 +30,19 @@ SELECT
 FROM missing_plates
 ON CONFLICT DO NOTHING;
 
+-- Preserve an initial history event for older units repaired by this migration.
+INSERT INTO public.plate_movements (plate_id, action, from_status, to_status, actor, reason, created_at)
+SELECT p.id, 'entrada', NULL, p.status, NULL, 'Reconstrução de unidade a partir do histórico de estoque', p.created_at
+FROM public.plates AS p
+WHERE NOT EXISTS (SELECT 1 FROM public.plate_movements AS m WHERE m.plate_id = p.id)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO public.qr_history (plate_id, action, old_url, new_url, actor, created_at)
+SELECT p.id, 'created', NULL, NULL, NULL, p.created_at
+FROM public.plates AS p
+WHERE NOT EXISTS (SELECT 1 FROM public.qr_history AS q WHERE q.plate_id = p.id)
+ON CONFLICT DO NOTHING;
+
 INSERT INTO public.code_counter (id, last_seq)
 SELECT 1, COALESCE(MAX(seq), 0) FROM public.plates
 ON CONFLICT (id) DO UPDATE
