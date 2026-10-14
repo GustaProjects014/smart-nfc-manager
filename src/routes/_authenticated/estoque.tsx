@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ArrowDownToLine, Boxes, CalendarDays, PackagePlus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader, Panel, Stat, DataTable, StatusBadge } from "@/components/ui-kit";
+import { PageHeader, Panel, Stat } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, fmtDate, fmtDateTime, formatNfcCode } from "@/lib/format";
 
