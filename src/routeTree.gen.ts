@@ -22,6 +22,8 @@ import { Route as AuthenticatedQrcodesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedRevendedoresRouteImport } from './routes/_authenticated/revendedores'
 import { Route as AuthenticatedVendasRouteImport } from './routes/_authenticated/vendas'
+import { Route as RSlugRouteImport } from './routes/r.$slug'
+import { Route as AuthenticatedPlaquinhasPlateIdRouteImport } from './routes/_authenticated/plaquinhas.$plateId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -89,6 +91,17 @@ const AuthenticatedVendasRoute = AuthenticatedVendasRouteImport.update({
   path: '/vendas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const RSlugRoute = RSlugRouteImport.update({
+  id: '/r/$slug',
+  path: '/r/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPlaquinhasPlateIdRoute =
+  AuthenticatedPlaquinhasPlateIdRouteImport.update({
+    id: '/$plateId',
+    path: '/$plateId',
+    getParentRoute: () => AuthenticatedPlaquinhasRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -98,11 +111,13 @@ export interface FileRoutesByFullPath {
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/painel': typeof AuthenticatedPainelRoute
-  '/plaquinhas': typeof AuthenticatedPlaquinhasRoute
+  '/plaquinhas': typeof AuthenticatedPlaquinhasRouteWithChildren
   '/qrcodes': typeof AuthenticatedQrcodesRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/revendedores': typeof AuthenticatedRevendedoresRoute
   '/vendas': typeof AuthenticatedVendasRoute
+  '/r/$slug': typeof RSlugRoute
+  '/plaquinhas/$plateId': typeof AuthenticatedPlaquinhasPlateIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -112,11 +127,13 @@ export interface FileRoutesByTo {
   '/estoque': typeof AuthenticatedEstoqueRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/painel': typeof AuthenticatedPainelRoute
-  '/plaquinhas': typeof AuthenticatedPlaquinhasRoute
+  '/plaquinhas': typeof AuthenticatedPlaquinhasRouteWithChildren
   '/qrcodes': typeof AuthenticatedQrcodesRoute
   '/relatorios': typeof AuthenticatedRelatoriosRoute
   '/revendedores': typeof AuthenticatedRevendedoresRoute
   '/vendas': typeof AuthenticatedVendasRoute
+  '/r/$slug': typeof RSlugRoute
+  '/plaquinhas/$plateId': typeof AuthenticatedPlaquinhasPlateIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -128,11 +145,13 @@ export interface FileRoutesById {
   '/_authenticated/estoque': typeof AuthenticatedEstoqueRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/painel': typeof AuthenticatedPainelRoute
-  '/_authenticated/plaquinhas': typeof AuthenticatedPlaquinhasRoute
+  '/_authenticated/plaquinhas': typeof AuthenticatedPlaquinhasRouteWithChildren
   '/_authenticated/qrcodes': typeof AuthenticatedQrcodesRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRoute
   '/_authenticated/revendedores': typeof AuthenticatedRevendedoresRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRoute
+  '/r/$slug': typeof RSlugRoute
+  '/_authenticated/plaquinhas/$plateId': typeof AuthenticatedPlaquinhasPlateIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,6 +168,8 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/revendedores'
     | '/vendas'
+    | '/r/$slug'
+    | '/plaquinhas/$plateId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -163,6 +184,8 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/revendedores'
     | '/vendas'
+    | '/r/$slug'
+    | '/plaquinhas/$plateId'
   id:
     | '__root__'
     | '/'
@@ -178,12 +201,15 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorios'
     | '/_authenticated/revendedores'
     | '/_authenticated/vendas'
+    | '/r/$slug'
+    | '/_authenticated/plaquinhas/$plateId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  RSlugRoute: typeof RSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -279,8 +305,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVendasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/r/$slug': {
+      id: '/r/$slug'
+      path: '/r/$slug'
+      fullPath: '/r/$slug'
+      preLoaderRoute: typeof RSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/plaquinhas/$plateId': {
+      id: '/_authenticated/plaquinhas/$plateId'
+      path: '/$plateId'
+      fullPath: '/plaquinhas/$plateId'
+      preLoaderRoute: typeof AuthenticatedPlaquinhasPlateIdRouteImport
+      parentRoute: typeof AuthenticatedPlaquinhasRoute
+    }
   }
 }
+
+interface AuthenticatedPlaquinhasRouteChildren {
+  AuthenticatedPlaquinhasPlateIdRoute: typeof AuthenticatedPlaquinhasPlateIdRoute
+}
+
+const AuthenticatedPlaquinhasRouteChildren: AuthenticatedPlaquinhasRouteChildren =
+  {
+    AuthenticatedPlaquinhasPlateIdRoute: AuthenticatedPlaquinhasPlateIdRoute,
+  }
+
+const AuthenticatedPlaquinhasRouteWithChildren =
+  AuthenticatedPlaquinhasRoute._addFileChildren(
+    AuthenticatedPlaquinhasRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
@@ -288,7 +342,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEstoqueRoute: typeof AuthenticatedEstoqueRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedPainelRoute: typeof AuthenticatedPainelRoute
-  AuthenticatedPlaquinhasRoute: typeof AuthenticatedPlaquinhasRoute
+  AuthenticatedPlaquinhasRoute: typeof AuthenticatedPlaquinhasRouteWithChildren
   AuthenticatedQrcodesRoute: typeof AuthenticatedQrcodesRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRoute
   AuthenticatedRevendedoresRoute: typeof AuthenticatedRevendedoresRoute
@@ -301,7 +355,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEstoqueRoute: AuthenticatedEstoqueRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedPainelRoute: AuthenticatedPainelRoute,
-  AuthenticatedPlaquinhasRoute: AuthenticatedPlaquinhasRoute,
+  AuthenticatedPlaquinhasRoute: AuthenticatedPlaquinhasRouteWithChildren,
   AuthenticatedQrcodesRoute: AuthenticatedQrcodesRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRoute,
   AuthenticatedRevendedoresRoute: AuthenticatedRevendedoresRoute,
@@ -315,6 +369,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  RSlugRoute: RSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
