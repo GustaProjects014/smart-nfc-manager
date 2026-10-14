@@ -9,10 +9,9 @@ import {
   QrCode,
   ShoppingBag,
   Tags,
-  Users,
   Wallet,
 } from "lucide-react";
-import { PageHeader, Panel, Stat } from "@/components/ui-kit";
+import { PageHeader, Panel } from "@/components/ui-kit";
 
 export const Route = createFileRoute("/_authenticated/painel")({
   head: () => ({
