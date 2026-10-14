@@ -101,7 +101,9 @@ function StockPage() {
     mutationFn: async () => {
       if (!modelId) throw new Error("Selecione o modelo da plaquinha.");
       if (!Number.isSafeInteger(qty) || qty < 1 || qty > 5000)
-        throw new Error("Informe uma quantidade inteira entre 1 e 5.000. (Limite atual do banco de dados).");
+        throw new Error(
+          "Informe uma quantidade inteira entre 1 e 5.000. (Limite atual do banco de dados).",
+        );
       const cost = unitCost.trim() === "" ? 0 : Number(unitCost.replace(",", "."));
       if (!Number.isFinite(cost) || cost < 0) throw new Error("Informe um custo unitário válido.");
       const { data, error } = await supabase.rpc("create_stock_entry", {
