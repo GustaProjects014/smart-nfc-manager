@@ -34,12 +34,13 @@ function SettingsPage() {
       return { settings: settingsRes.data, models: modelsRes.data ?? [] };
     },
   });
+  const settings = query.data?.settings;
   useEffect(() => {
-    if (!query.data?.settings) return;
-    setBusinessName(query.data.settings.business_name);
-    setThreshold(String(query.data.settings.low_stock_threshold));
-    setBaseUrl(query.data.settings.public_base_url ?? "");
-  }, [query.data?.settings?.updated_at, query.data?.settings?.business_name, query.data?.settings?.low_stock_threshold, query.data?.settings?.public_base_url]);
+    if (!settings) return;
+    setBusinessName(settings.business_name);
+    setThreshold(String(settings.low_stock_threshold));
+    setBaseUrl(settings.public_base_url ?? "");
+  }, [settings]);
 
   const saveSettings = useMutation({
     mutationFn: async () => {
