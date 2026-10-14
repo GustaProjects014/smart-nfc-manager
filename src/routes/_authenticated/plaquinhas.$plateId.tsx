@@ -524,12 +524,13 @@ function PlateDetailPage() {
                 <img
                   src={qrImage}
                   alt={"QR Code permanente " + plate.code}
-                  className="h-auto w-full max-w-[280px]"
+                  className="block h-auto w-full max-w-[280px]"
+                  onError={() => setQrImageError(true)}
                 />
               ) : (
                 <div className="grid aspect-square w-full max-w-[280px] place-items-center p-6 text-sm text-muted-foreground">
                   {qrImageError
-                    ? "Não foi possível gerar a imagem do QR Code. Atualize a página e tente novamente."
+                    ? "Não foi possível gerar a imagem. Confira o endereço permanente e tente atualizar."
                     : "Gerando QR Code permanente…"}
                 </div>
               )}
@@ -539,13 +540,26 @@ function PlateDetailPage() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               <button
                 type="button"
-                disabled={!qrImage}
-                onClick={() => {
-                  if (!qrImage) return;
-                  const a = document.createElement("a");
-                  a.href = qrImage;
-                  a.download = plate.code.toLowerCase().replace(/\s+/g, "-") + "-qr.png";
-                  a.click();
+                disabled={!qrImage || !permanentUrl}
+                onClick={async () => {
+                  if (!permanentUrl) return;
+                  try {
+                    const image = qrImage || await QRCode.toDataURL(permanentUrl, {
+                      width: 1000,
+                      margin: 3,
+                      errorCorrectionLevel: "H",
+                      color: { dark: "#171717", light: "#FFFFFF" },
+                    });
+                    const a = document.createElement("a");
+                    a.href = image;
+                    a.download = plate.code.toLowerCase().replace(/\s+/g, "-") + "-qr.png";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                  } catch (error) {
+                    console.error("Falha ao baixar QR Code:", error);
+                    toast.error("Não foi possível gerar o PNG. Tente novamente.");
+                  }
                 }}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground disabled:opacity-50"
               >
