@@ -162,7 +162,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.create_stock_entry(uuid, integer, date, text, numeric, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.create_stock_entry(uuid, text, integer, date, text, numeric) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_stock_entry(uuid, integer, date, text, numeric, text) TO authenticated;
 
 -- Anonymous visitors must be able to resolve public QR links; the function returns only the destination/status for a slug.
 GRANT EXECUTE ON FUNCTION public.resolve_qr(text) TO anon, authenticated;
