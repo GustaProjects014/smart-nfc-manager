@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/vendas")({
 
 function SalesPage() {
   const qc = useQueryClient();
-  const [customerId, setCustomerId] = useState("");
+  const [customerName, setCustomerName] = useState("");
   const [plateIds, setPlateIds] = useState<string[]>([]);
   const [unitPrice, setUnitPrice] = useState("");
   const [discount, setDiscount] = useState("0");
@@ -43,7 +43,6 @@ function SalesPage() {
     queryKey: ["sales-page-data"],
     queryFn: async () => {
       const [customersRes, platesRes, salesRes] = await Promise.all([
-        supabase.from("customers").select("id,name,phone").order("name"),
         supabase
           .from("plates")
           .select("id,code,status,model_id,plate_models(name,default_price)")
@@ -58,10 +57,9 @@ function SalesPage() {
           .order("sale_number", { ascending: false })
           .limit(500),
       ]);
-      const error = customersRes.error || platesRes.error || salesRes.error;
+      const error = platesRes.error || salesRes.error;
       if (error) throw error;
       return {
-        customers: customersRes.data ?? [],
         plates: platesRes.data ?? [],
         sales: salesRes.data ?? [],
       };
@@ -90,7 +88,8 @@ function SalesPage() {
 
   const createSale = useMutation({
     mutationFn: async () => {
-      if (!customerId) throw new Error("Selecione um cliente.");
+      const name = customerName.trim();
+      if (!name) throw new Error("Informe o nome do cliente.");
       if (!plateIds.length) throw new Error("Selecione ao menos uma plaquinha disponível.");
       const price = Number(unitPrice.replace(",", "."));
       const disc = Number(discount.replace(",", "."));
@@ -101,9 +100,15 @@ function SalesPage() {
         throw new Error("O desconto informado é inválido.");
       if (!Number.isFinite(paid) || paid < 0 || paid > plateIds.length * price - disc)
         throw new Error("O valor recebido não pode ser negativo nem maior que o total.");
+      const { data: customer, error: customerError } = await supabase
+        .from("customers")
+        .insert({ name })
+        .select("id")
+        .single();
+      if (customerError) throw customerError;
       const { error } = await supabase.rpc("create_sale", {
         _amount_paid: paid,
-        _customer_id: customerId,
+        _customer_id: customer.id,
         _discount: disc,
         _notes: notes.trim(),
         _payment_method: method,
@@ -117,6 +122,7 @@ function SalesPage() {
     onSuccess: async () => {
       toast.success("Venda registrada e plaquinhas atualizadas.");
       setPlateIds([]);
+      setCustomerName("");
       setNotes("");
       setDiscount("0");
       setAmountPaid("0");
@@ -192,7 +198,7 @@ function SalesPage() {
           role="alert"
           className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm"
         >
-          Não foi possível carregar clientes, estoque e vendas. Verifique a conexão com o banco.
+          Não foi possível carregar estoque e vendas: {dataQuery.error instanceof Error ? dataQuery.error.message : "verifique a conexão com o banco."}
         </div>
       )}
       <section className="grid gap-3 grid-cols-2 xl:grid-cols-4">
@@ -240,19 +246,16 @@ function SalesPage() {
           >
             <label className="block text-sm font-medium">
               Cliente *
-              <select
+              <input
                 className={fieldCls + " mt-1.5"}
-                value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                maxLength={180}
+                placeholder="Digite o nome do cliente"
+                autoComplete="name"
                 required
-              >
-                <option value="">Selecione um cliente</option>
-                {data?.customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              />
             </label>
             <div>
               <div className="mb-1.5 flex items-center justify-between">
@@ -378,7 +381,7 @@ function SalesPage() {
               </div>
             </div>
             <button
-              disabled={createSale.isPending || !plateIds.length || !customerId}
+              disabled={createSale.isPending || !plateIds.length || !customerName.trim()}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50"
             >
               <Plus className="size-4" />
