@@ -67,18 +67,16 @@ function SettingsPage() {
       const normalizedUrl = baseUrl.trim().replace(/\/+$/, "");
       if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl))
         throw new Error("O endereço público precisa começar com https:// ou http://.");
-      const { error } = await supabase
-        .from("settings")
-        .upsert(
-          {
-            id: 1,
-            business_name: businessName.trim(),
-            low_stock_threshold: n,
-            public_base_url: normalizedUrl || null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "id" },
-        );
+      const { error } = await supabase.from("settings").upsert(
+        {
+          id: 1,
+          business_name: businessName.trim(),
+          low_stock_threshold: n,
+          public_base_url: normalizedUrl || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" },
+      );
       if (error) throw error;
     },
     onSuccess: async () => {

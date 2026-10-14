@@ -95,14 +95,12 @@ function FinancePage() {
       const n = Number(amount.replace(",", "."));
       if (!description.trim()) throw new Error("Informe a descrição da despesa.");
       if (!Number.isFinite(n) || n <= 0) throw new Error("Informe um valor maior que zero.");
-      const { error } = await supabase
-        .from("expenses")
-        .insert({
-          description: description.trim(),
-          amount: n,
-          category,
-          expense_date: expenseDate,
-        });
+      const { error } = await supabase.from("expenses").insert({
+        description: description.trim(),
+        amount: n,
+        category,
+        expense_date: expenseDate,
+      });
       if (error) throw error;
     },
     onSuccess: async () => {
