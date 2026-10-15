@@ -584,6 +584,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      confirm_full_payment_with_date: {
+        Args: { _paid_at: string; _sale_id: string }
+        Returns: undefined
+      }
       create_sale: {
         Args: {
           _amount_paid: number
