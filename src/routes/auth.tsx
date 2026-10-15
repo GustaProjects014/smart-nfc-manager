@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,66 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const [mode, setMode] = useState<"in" | "up">("in");
+  const [resetMode, setResetMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [keepConnected, setKeepConnected] = useState(true);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("reset") === "1") {
+      setResetMode(true);
+    }
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setResetMode(true);
+    });
+    return () => authListener.subscription.unsubscribe();
+  }, []);
+
+  async function sendPasswordReset() {
+    if (!email.trim()) {
+      toast.error("Digite seu e-mail para receber o link de redefinição.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin + "/auth?reset=1",
+      });
+      if (error) throw error;
+      toast.success("Se esse e-mail estiver cadastrado, você receberá um link para redefinir a senha. Confira também o spam.");
+    } catch (err) {
+      toast.error((err as Error).message || "Não foi possível enviar o e-mail de redefinição.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveNewPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error("A nova senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Senha redefinida com sucesso. Você já pode acessar o sistema.");
+      setResetMode(false);
+      setMode("in");
+      setPassword("");
+      setNewPassword("");
+      navigate({ to: "/painel" });
+    } catch (err) {
+      toast.error((err as Error).message || "Não foi possível redefinir a senha. Solicite um novo link.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -78,25 +132,31 @@ function AuthPage() {
         <div className="text-xs text-ink-foreground/40">© {new Date().getFullYear()} NFC Control</div>
       </div>
       <div className="flex items-center justify-center p-6">
-        <form onSubmit={submit} className="w-full max-w-sm space-y-4">
+        <form onSubmit={resetMode ? saveNewPassword : submit} className="w-full max-w-sm space-y-4">
           <div>
-            <h2 className="text-2xl font-semibold">{mode === "in" ? "Entrar" : "Criar conta"}</h2>
+            <h2 className="text-2xl font-semibold">{resetMode ? "Redefinir senha" : mode === "in" ? "Entrar" : "Criar conta"}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {mode === "in" ? "Acesse seu painel." : "A primeira conta criada se torna a administradora."}
+              {resetMode ? "Digite sua nova senha para recuperar o acesso." : mode === "in" ? "Acesse seu painel." : "A primeira conta criada se torna a administradora."}
             </p>
           </div>
-          {mode === "up" && (
+          {!resetMode && mode === "up" && (
             <Field label="Nome">
               <Input value={name} onChange={(e) => setName(e.target.value)} required />
             </Field>
           )}
-          <Field label="E-mail">
+          {!resetMode && <Field label="E-mail">
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
-          </Field>
-          <Field label="Senha">
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === "in" ? "current-password" : "new-password"} />
-          </Field>
-          {mode === "in" && (
+          </Field>}
+          {resetMode ? (
+            <Field label="Nova senha">
+              <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6} autoComplete="new-password" />
+            </Field>
+          ) : (
+            <Field label="Senha">
+              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === "in" ? "current-password" : "new-password"} />
+            </Field>
+          )}
+          {!resetMode && mode === "in" && (
             <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
               <input
                 type="checkbox"
@@ -108,11 +168,22 @@ function AuthPage() {
             </label>
           )}
           <Button type="submit" variant="gold" className="w-full" disabled={busy}>
-            {busy ? "Aguarde..." : mode === "in" ? "Entrar" : "Criar conta"}
+            {busy ? "Aguarde..." : resetMode ? "Salvar nova senha" : mode === "in" ? "Entrar" : "Criar conta"}
           </Button>
-          <button type="button" className="w-full text-center text-sm text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
-            {mode === "in" ? "Não tem conta? Criar conta" : "Já tem conta? Entrar"}
-          </button>
+          {!resetMode && mode === "in" && (
+            <button type="button" className="w-full text-center text-sm text-muted-foreground hover:text-foreground" onClick={sendPasswordReset} disabled={busy}>
+              Esqueci minha senha
+            </button>
+          )}
+          {resetMode ? (
+            <button type="button" className="w-full text-center text-sm text-muted-foreground hover:text-foreground" onClick={() => { setResetMode(false); navigate({ to: "/auth" }); }}>
+              Voltar para o login
+            </button>
+          ) : (
+            <button type="button" className="w-full text-center text-sm text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+              {mode === "in" ? "Não tem conta? Criar conta" : "Já tem conta? Entrar"}
+            </button>
+          )}
         </form>
       </div>
     </div>
