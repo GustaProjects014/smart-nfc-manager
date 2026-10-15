@@ -225,7 +225,7 @@ function PlateDetailPage() {
         _action: action,
         _plate_id: plateId,
         _reason: reason.trim(),
-        _reseller_id: action === "atribuir" ? resellerId : undefined,
+        ...(action === "atribuir" && resellerId ? { _reseller_id: resellerId } : {}),
       });
       if (error) throw error;
     },
