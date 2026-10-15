@@ -160,8 +160,16 @@ function SalesPage() {
         qc.invalidateQueries({ queryKey: ["dashboard-summary"] }),
       ]);
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Não foi possível registrar o pagamento."),
+    onError: (e: unknown) => {
+      // Supabase/PostgREST errors are plain objects, not always Error instances.
+      const message =
+        e instanceof Error
+          ? e.message
+          : typeof e === "object" && e !== null && "message" in e && typeof e.message === "string"
+            ? e.message
+            : "Não foi possível registrar o pagamento.";
+      toast.error(message);
+    },
   });
   const cancelSale = useMutation({
     mutationFn: async () => {
