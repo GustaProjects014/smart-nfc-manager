@@ -138,7 +138,7 @@ function SalesPage() {
   const addPayment = useMutation({
     mutationFn: async () => {
       if (!paymentSaleId) throw new Error("Selecione uma venda em aberto.");
-      const { error } = await supabase.rpc("confirm_full_payment", {
+      const { error } = await supabase.rpc("confirm_full_payment_with_date" as never, {
         _sale_id: paymentSaleId,
         _paid_at: paymentDate,
       });
