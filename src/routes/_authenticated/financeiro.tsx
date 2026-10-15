@@ -5,7 +5,7 @@ import { Download, Receipt, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, Panel, DataTable, Empty, Stat } from "@/components/ui-kit";
 import { supabase } from "@/integrations/supabase/client";
-import { brl, downloadCsv, fmtDate, fmtDateTime } from "@/lib/format";
+import { brl, downloadCsv, fmtDate, fmtDateTime, today } from "@/lib/format";
 
 const fieldCls =
   "h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20";
