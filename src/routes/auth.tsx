@@ -23,6 +23,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [keepConnected, setKeepConnected] = useState(true);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
@@ -45,8 +46,21 @@ function AuthPage() {
         else toast.success("Conta criada. Confirme seu e-mail para entrar.");
       }
     } catch (err) {
-      const m = (err as Error).message;
-      toast.error(m.includes("Invalid login") ? "E-mail ou senha incorretos" : m);
+      const m = (err as Error).message || "";
+      const normalized = m.toLocaleLowerCase("pt-BR");
+      if (mode === "in" && (normalized.includes("invalid login") || normalized.includes("invalid credentials"))) {
+        toast.error("E-mail ou senha incorretos.");
+      } else if (
+        mode === "up" &&
+        (normalized.includes("already registered") ||
+          normalized.includes("user already exists") ||
+          normalized.includes("already been registered") ||
+          normalized.includes("email_exists"))
+      ) {
+        toast.error("Este e-mail já está cadastrado. Faça login ou use outro e-mail.");
+      } else {
+        toast.error(m || "Não foi possível concluir o acesso.");
+      }
     } finally {
       setBusy(false);
     }
@@ -80,8 +94,19 @@ function AuthPage() {
             <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
           </Field>
           <Field label="Senha">
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} autoComplete={mode === "in" ? "current-password" : "new-password"} />
           </Field>
+          {mode === "in" && (
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={keepConnected}
+                onChange={(e) => setKeepConnected(e.target.checked)}
+                className="size-4 rounded border-input accent-primary"
+              />
+              Mantenha conectado
+            </label>
+          )}
           <Button type="submit" variant="gold" className="w-full" disabled={busy}>
             {busy ? "Aguarde..." : mode === "in" ? "Entrar" : "Criar conta"}
           </Button>
