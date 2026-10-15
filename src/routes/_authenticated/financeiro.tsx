@@ -49,12 +49,17 @@ function FinancePage() {
           .order("expense_date", { ascending: false })
           .limit(2000),
       ]);
-      const error = salesRes.error || paymentsRes.error || expensesRes.error;
-      if (error) throw error;
+      // As vendas são a fonte principal do dashboard. Falhas nas tabelas auxiliares
+      // não devem esconder o faturamento e os recebimentos já gravados em sales.
+      if (salesRes.error) throw salesRes.error;
       return {
         sales: salesRes.data ?? [],
-        payments: paymentsRes.data ?? [],
-        expenses: expensesRes.data ?? [],
+        payments: paymentsRes.error ? [] : (paymentsRes.data ?? []),
+        expenses: expensesRes.error ? [] : (expensesRes.data ?? []),
+        auxiliaryErrors: [
+          paymentsRes.error ? "Não foi possível carregar os pagamentos detalhados." : "",
+          expensesRes.error ? "Não foi possível carregar as despesas." : "",
+        ].filter(Boolean),
       };
     },
   });
@@ -170,6 +175,14 @@ function FinancePage() {
           {query.error instanceof Error
             ? query.error.message
             : "verifique as permissões e a conexão com o banco de dados."}
+        </div>
+      )}
+      {!!data?.auxiliaryErrors?.length && (
+        <div role="status" className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+          O faturamento e os recebimentos continuam disponíveis, mas alguns detalhes não carregaram:
+          <ul className="mt-1 list-disc pl-5">
+            {data.auxiliaryErrors.map((message) => <li key={message}>{message}</li>)}
+          </ul>
         </div>
       )}
       {query.isLoading && (
