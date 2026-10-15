@@ -30,7 +30,7 @@ function FinancePage() {
   const query = useQuery({
     queryKey: ["finance-page"],
     queryFn: async () => {
-      const [salesRes, paymentsRes, expensesRes] = await Promise.all([
+      const [salesRes, paymentsRes, expensesRes, saleItemsRes] = await Promise.all([
         supabase
           .from("sales")
           .select(
@@ -48,6 +48,10 @@ function FinancePage() {
           .select("id,description,category,amount,expense_date,created_at")
           .order("expense_date", { ascending: false })
           .limit(2000),
+        supabase
+          .from("sale_items")
+          .select("id,sale_id,unit_price,unit_cost,plates(plate_models(name))")
+          .limit(5000),
       ]);
       // As vendas são a fonte principal do dashboard. Falhas nas tabelas auxiliares
       // não devem esconder o faturamento e os recebimentos já gravados em sales.
@@ -56,9 +60,11 @@ function FinancePage() {
         sales: salesRes.data ?? [],
         payments: paymentsRes.error ? [] : (paymentsRes.data ?? []),
         expenses: expensesRes.error ? [] : (expensesRes.data ?? []),
+        saleItems: saleItemsRes.error ? [] : (saleItemsRes.data ?? []),
         auxiliaryErrors: [
           paymentsRes.error ? "Não foi possível carregar os pagamentos detalhados." : "",
           expensesRes.error ? "Não foi possível carregar as despesas." : "",
+          saleItemsRes.error ? "Não foi possível carregar o relatório de modelos vendidos." : "",
         ].filter(Boolean),
       };
     },
@@ -69,6 +75,23 @@ function FinancePage() {
   const revenue = activeSales.reduce((sum, s) => sum + Number(s.total || 0), 0);
   const pending = Math.max(0, revenue - received);
   const expensesTotal = (data?.expenses ?? []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const modelSales = useMemo(() => {
+    const activeSaleIds = new Set(activeSales.map((sale) => sale.id));
+    const totals = new Map<string, { quantity: number; revenue: number; cost: number }>();
+    for (const item of data?.saleItems ?? []) {
+      if (!activeSaleIds.has(item.sale_id)) continue;
+      const plate = item.plates as unknown as { plate_models?: { name?: string } | null } | null;
+      const name = plate?.plate_models?.name || "Modelo não identificado";
+      const current = totals.get(name) ?? { quantity: 0, revenue: 0, cost: 0 };
+      current.quantity += 1;
+      current.revenue += Number(item.unit_price || 0);
+      current.cost += Number(item.unit_cost || 0);
+      totals.set(name, current);
+    }
+    return [...totals.entries()]
+      .map(([name, values]) => ({ name, ...values, margin: values.revenue - values.cost }))
+      .sort((a, b) => b.quantity - a.quantity || b.revenue - a.revenue);
+  }, [data, activeSales]);
   const monthlySales = useMemo(() => {
     const now = new Date();
     return Array.from({ length: 6 }, (_, index) => {
@@ -241,6 +264,28 @@ function FinancePage() {
           Valores de vendas não canceladas. O faturamento representa o total vendido; recebido
           representa o valor registrado como pago.
         </p>
+      </Panel>
+      <Panel title="Vendas por modelo de plaquinha">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Ranking por unidades vendidas. O faturamento por modelo considera os itens das vendas não canceladas.
+        </p>
+        {!modelSales.length ? (
+          <Empty>
+            Ainda não há itens de venda associados aos modelos. Após cadastrar estoque e registrar vendas, o ranking aparecerá aqui.
+          </Empty>
+        ) : (
+          <DataTable head={["Modelo", "Unidades", "Faturamento", "Custo registrado", "Margem estimada"]}>
+            {modelSales.map((model) => (
+              <tr key={model.name}>
+                <td className="font-medium">{model.name}</td>
+                <td>{model.quantity}</td>
+                <td className="whitespace-nowrap">{brl(model.revenue)}</td>
+                <td className="whitespace-nowrap">{brl(model.cost)}</td>
+                <td className="whitespace-nowrap">{brl(model.margin)}</td>
+              </tr>
+            ))}
+          </DataTable>
+        )}
       </Panel>
       <section className="grid gap-3 grid-cols-2 xl:grid-cols-4">
         <Stat label="Faturamento ativo" value={brl(revenue)} hint="Vendas não canceladas" />
