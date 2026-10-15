@@ -33,6 +33,7 @@ function SalesPage() {
   const [notes, setNotes] = useState("");
   const [search, setSearch] = useState("");
   const [paymentSaleId, setPaymentSaleId] = useState("");
+  const [paymentDate, setPaymentDate] = useState(today());
   const [cancelId, setCancelId] = useState("");
   const [cancelReason, setCancelReason] = useState("");
 
@@ -139,12 +140,14 @@ function SalesPage() {
       if (!paymentSaleId) throw new Error("Selecione uma venda em aberto.");
       const { error } = await supabase.rpc("confirm_full_payment", {
         _sale_id: paymentSaleId,
+        _paid_at: paymentDate,
       });
       if (error) throw error;
     },
     onSuccess: async () => {
       toast.success("Pagamento total confirmado e registrado.");
       setPaymentSaleId("");
+      setPaymentDate(today());
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["sales-page-data"] }),
         qc.invalidateQueries({ queryKey: ["dashboard-summary"] }),
@@ -423,6 +426,16 @@ function SalesPage() {
                       );
                     })}
                 </select>
+              </label>
+              <label className="block text-sm font-medium">
+                Data do pagamento
+                <input
+                  className={fieldCls + " mt-1.5"}
+                  type="date"
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  required
+                />
               </label>
               {paymentSaleId && (
                 <p className="rounded-lg border bg-secondary/40 p-3 text-sm">
