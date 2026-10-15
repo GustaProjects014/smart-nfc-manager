@@ -178,10 +178,15 @@ function FinancePage() {
         </div>
       )}
       {!!data?.auxiliaryErrors?.length && (
-        <div role="status" className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+        <div
+          role="status"
+          className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm"
+        >
           O faturamento e os recebimentos continuam disponíveis, mas alguns detalhes não carregaram:
           <ul className="mt-1 list-disc pl-5">
-            {data.auxiliaryErrors.map((message) => <li key={message}>{message}</li>)}
+            {data.auxiliaryErrors.map((message) => (
+              <li key={message}>{message}</li>
+            ))}
           </ul>
         </div>
       )}
