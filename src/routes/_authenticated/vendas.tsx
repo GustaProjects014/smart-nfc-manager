@@ -33,9 +33,6 @@ function SalesPage() {
   const [notes, setNotes] = useState("");
   const [search, setSearch] = useState("");
   const [paymentSaleId, setPaymentSaleId] = useState("");
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("pix");
-  const [paymentDate, setPaymentDate] = useState(today());
   const [cancelId, setCancelId] = useState("");
   const [cancelReason, setCancelReason] = useState("");
 
@@ -139,35 +136,28 @@ function SalesPage() {
   });
   const addPayment = useMutation({
     mutationFn: async () => {
-      const amount = Number(paymentAmount.replace(",", "."));
-      if (!paymentSaleId) throw new Error("Selecione uma venda.");
-      if (!Number.isFinite(amount) || amount <= 0)
-        throw new Error("Informe um valor de pagamento maior que zero.");
-      const { error } = await supabase.rpc("add_payment", {
-        _amount: amount,
-        _method: paymentMethod,
-        _paid_at: paymentDate,
+      if (!paymentSaleId) throw new Error("Selecione uma venda em aberto.");
+      const { error } = await supabase.rpc("confirm_full_payment", {
         _sale_id: paymentSaleId,
       });
       if (error) throw error;
     },
     onSuccess: async () => {
-      toast.success("Pagamento registrado.");
-      setPaymentAmount("");
+      toast.success("Pagamento total confirmado e registrado.");
       setPaymentSaleId("");
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["sales-page-data"] }),
         qc.invalidateQueries({ queryKey: ["dashboard-summary"] }),
+        qc.invalidateQueries({ queryKey: ["finance-page"] }),
       ]);
     },
     onError: (e: unknown) => {
-      // Supabase/PostgREST errors are plain objects, not always Error instances.
       const message =
         e instanceof Error
           ? e.message
           : typeof e === "object" && e !== null && "message" in e && typeof e.message === "string"
             ? e.message
-            : "Não foi possível registrar o pagamento.";
+            : "Não foi possível confirmar o pagamento total.";
       toast.error(message);
     },
   });
@@ -402,7 +392,7 @@ function SalesPage() {
         </Panel>
         <div className="space-y-5">
           <Panel
-            title="Registrar pagamento adicional"
+            title="Confirmar pagamento total"
             action={<CreditCard className="size-4 text-muted-foreground" />}
           >
             <form
@@ -434,50 +424,18 @@ function SalesPage() {
                     })}
                 </select>
               </label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block text-sm font-medium">
-                  Valor recebido (R$)
-                  <input
-                    className={fieldCls + " mt-1.5"}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                    required
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  Data do pagamento
-                  <input
-                    className={fieldCls + " mt-1.5"}
-                    type="date"
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
-                    required
-                  />
-                </label>
-              </div>
-              <label className="block text-sm font-medium">
-                Forma de pagamento
-                <select
-                  className={fieldCls + " mt-1.5"}
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
-                  <option value="pix">Pix</option>
-                  <option value="dinheiro">Dinheiro</option>
-                  <option value="cartao">Cartão</option>
-                  <option value="transferencia">Transferência</option>
-                  <option value="outro">Outro</option>
-                </select>
-              </label>
+              {paymentSaleId && (
+                <p className="rounded-lg border bg-secondary/40 p-3 text-sm">
+                  Será registrado o pagamento do saldo restante da venda selecionada. O valor será
+                  calculado automaticamente pelo sistema.
+                </p>
+              )}
               <button
                 disabled={addPayment.isPending || !paymentSaleId}
                 className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold hover:bg-secondary disabled:opacity-50"
               >
                 <CircleDollarSign className="size-4" />
-                {addPayment.isPending ? "Registrando…" : "Confirmar pagamento"}
+                {addPayment.isPending ? "Confirmando pagamento…" : "Confirmar pagamento total"}
               </button>
             </form>
           </Panel>
