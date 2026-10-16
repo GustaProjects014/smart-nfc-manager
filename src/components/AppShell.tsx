@@ -59,7 +59,7 @@ export function AppShell() {
 
   const brand = (
     <div className="flex items-center gap-2.5 px-2">
-      <div className="grid size-8 place-items-center rounded-lg bg-sidebar-primary font-display text-sm font-bold text-sidebar-primary-foreground">N</div>
+      <img src="/nfc-control-logo.svg" alt="NC NFC" className="h-12 w-20 shrink-0 object-contain" />
       <div>
         <div className="font-display text-sm font-semibold text-sidebar-accent-foreground">NFC Control</div>
         <div className="text-[11px] text-sidebar-foreground/60">{me?.isAdmin ? "Administrador" : me?.isReseller ? "Revendedor" : "Sem permissão"}</div>
@@ -80,7 +80,7 @@ export function AppShell() {
     <div className="min-h-screen lg:pl-64">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 bg-sidebar p-4 lg:flex">
         {brand}
-        <div className="gold-line opacity-40" />
+        <div className="gold-line opacity-60" />
         {nav}
         {footer}
       </aside>
