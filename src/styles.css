@@ -128,3 +128,7 @@
   background: linear-gradient(90deg, transparent, #80b9df, transparent);
   height: 1px;
 }
+
+#lovable -badge { 
+display: none !important; 
+}
