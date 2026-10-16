@@ -123,7 +123,7 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden flex-col justify-between bg-ink p-10 text-ink-foreground lg:flex">
-        <div className="font-display text-lg font-semibold">NFC Control</div>
+        <img src="/nfc-control-logo.svg" alt="NC NFC" className="h-28 w-60 object-contain object-left" />
         <div>
           <div className="gold-line mb-6 w-24" />
           <h1 className="max-w-md text-4xl font-semibold leading-tight">Cada plaquinha com código único, destino dinâmico e histórico completo.</h1>
@@ -134,6 +134,7 @@ function AuthPage() {
       <div className="flex items-center justify-center p-6">
         <form onSubmit={resetMode ? saveNewPassword : submit} className="w-full max-w-sm space-y-4">
           <div>
+            <img src="/nfc-control-logo.svg" alt="NC NFC" className="mb-5 h-24 w-48 rounded-xl bg-[#26343f] p-3 object-contain lg:hidden" />
             <h2 className="text-2xl font-semibold">{resetMode ? "Redefinir senha" : mode === "in" ? "Entrar" : "Criar conta"}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {resetMode ? "Digite sua nova senha para recuperar o acesso." : mode === "in" ? "Acesse seu painel." : "A primeira conta criada se torna a administradora."}
